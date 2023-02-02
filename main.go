@@ -278,6 +278,8 @@ func (s *Scanner) scanToken() {
 			for s.peek() != '\n' && !s.isAtEnd() {
 				s.advance()
 			}
+		} else if s.match('*') {
+			s.scanMultiLineComment()
 		} else {
 			s.addToken(SLASH)
 		}
@@ -361,6 +363,24 @@ func (s *Scanner) scanIdentifierOrKeyword() {
 	}
 
 	s.addToken(kw)
+}
+
+func (s *Scanner) scanMultiLineComment() {
+	for s.peek() != '*' && s.peekNext() != '/' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+	if s.isAtEnd() {
+		s.lox.reportError(s.line, "Unterminated multi-line comment.")
+		return
+	}
+
+	// need to advance twice at end to consume */ closing tag
+	s.advance()
+	s.advance()
 }
 
 func (s *Scanner) advance() rune {
