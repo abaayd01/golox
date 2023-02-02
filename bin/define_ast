@@ -1,0 +1,1 @@
+go run internal/tools/generate_ast/main.go ./
