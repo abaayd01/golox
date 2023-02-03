@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"go/format"
 	"io"
@@ -10,38 +11,31 @@ import (
 	"text/template"
 )
 
-type astStructDefinition struct {
-	Name string
-}
-
-type astTypeDefinition struct {
-	astStructDefinition
-	FieldList string
-}
-
 func defineAst(outputDir string, baseName string, types []string) error {
 	outputFile := fmt.Sprintf("%s/ast.go", outputDir)
-	f, err := os.Create(outputFile)
-	if err != nil {
-		fmt.Println(err)
-	}
+	buf := bytes.Buffer{}
 
-	_, err = f.WriteString("package main\n\n")
+	_, err := buf.WriteString("package main\n\n")
 	if err != nil {
 		return err
 	}
 
-	t, err := template.New("astStruct").Parse("type {{ .Name }} struct{}\n")
+	tmpl, err := template.New("exprStruct").Parse(
+		"type {{ .Name }} struct{}\n\n",
+	)
 	if err != nil {
 		return err
 	}
 
-	err = t.Execute(f, astStructDefinition{Name: baseName})
+	err = tmpl.Execute(&buf, struct{ Name string }{Name: baseName})
+	if err != nil {
+		return err
+	}
 
 	for _, s := range types {
 		className := strings.Trim(strings.Split(s, ":")[0], " ")
-		fieldNames := strings.ReplaceAll(strings.Trim(strings.Split(s, ":")[1], " "), ",", "\n")
-		err = defineType(f, className, fieldNames)
+		fieldNames := strings.Split(strings.Trim(strings.Split(s, ":")[1], " "), ",")
+		err = defineType(&buf, className, fieldNames)
 		if err != nil {
 			return err
 		}
@@ -50,16 +44,19 @@ func defineAst(outputDir string, baseName string, types []string) error {
 		return err
 	}
 
-	// formatting the file
-	unfmtted, err := os.ReadFile(outputFile)
+	err = defineVisitor(&buf, types)
 	if err != nil {
 		return err
 	}
 
-	fmtted, err := format.Source(unfmtted)
+	// formatting the temporary buffer
+	fmtted, err := format.Source(buf.Bytes())
 
-	// overwriting the file
-	f, err = os.Create(outputFile)
+	fmt.Printf("buf: %s", string(buf.Bytes()))
+	fmt.Printf("fmtted: %s", fmtted)
+
+	// writing it out to file
+	f, err := os.Create(outputFile)
 	if err != nil {
 		return err
 	}
@@ -68,18 +65,60 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	return err
 }
 
-func defineType(f io.Writer, className string, fieldList string) error {
-	t, err := template.New("astStruct").Parse("type {{ .Name }} struct {\n{{ .FieldList }}\n}\n")
+func defineType(w io.Writer, typeName string, fieldList []string) error {
+	t, err := template.New("astStruct").Parse(
+		`type {{ .Name }}[R any] struct {
+			{{range .FieldList}}
+			{{.}}{{end}}
+		}
+		func (t {{.Name}}[R]) Accept(visitor Visitor[R]) R{
+			return visitor.Visit{{.Name}}(t)
+		}
+		`,
+	)
 	if err != nil {
 		return err
 	}
 
-	return t.Execute(f,
-		astTypeDefinition{
-			astStructDefinition: astStructDefinition{Name: className},
-			FieldList:           fieldList,
+	return t.Execute(w,
+		struct {
+			Name      string
+			FieldList []string
+		}{
+			Name:      typeName,
+			FieldList: fieldList,
 		},
 	)
+}
+
+func defineVisitor(w io.Writer, types []string) error {
+	var typeNames []string
+	for _, s := range types {
+		typeName := strings.Trim(strings.Split(s, ":")[0], " ")
+		typeNames = append(typeNames, typeName)
+	}
+
+	tmpl, err := template.New("visitorInterface").Parse(
+		`type Visitor[R any] interface {
+				{{range .TypeNames}}
+				Visit{{.}}(expr {{.}}[R]) R{{end}}
+			}
+		`,
+	)
+	if err != nil {
+		return fmt.Errorf("could not parse visitorInterface template: %w", err)
+	}
+
+	err = tmpl.Execute(w, struct {
+		TypeNames []string
+	}{
+		TypeNames: typeNames,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func main() {
