@@ -21,7 +21,10 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	}
 
 	tmpl, err := template.New("exprStruct").Parse(
-		"type {{ .Name }} struct{}\n\n",
+		`type {{.Name}}[R any] interface {
+			Accept(visitor Visitor[R]) R
+		}
+		`,
 	)
 	if err != nil {
 		return err
@@ -131,9 +134,9 @@ func main() {
 	outputDir := args[1]
 
 	err := defineAst(outputDir, "Expr", []string{
-		"Unary: operator Token, right Expr",
-		"Binary: left Expr, operator Token, right Expr",
-		"Grouping: expression Expr",
+		"Unary: operator Token, right Expr[R]",
+		"Binary: left Expr[R], operator Token, right Expr[R]",
+		"Grouping: expression Expr[R]",
 		"Literal: value Object",
 	})
 	if err != nil {
