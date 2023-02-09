@@ -21,8 +21,8 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	}
 
 	tmpl, err := template.New("exprStruct").Parse(
-		`type {{.Name}}[R any] interface {
-			Accept(visitor Visitor[R]) R
+		`type {{.Name}} interface {
+			Accept(visitor Visitor) any
 		}
 		`,
 	)
@@ -70,11 +70,11 @@ func defineAst(outputDir string, baseName string, types []string) error {
 
 func defineType(w io.Writer, typeName string, fieldList []string) error {
 	t, err := template.New("astStruct").Parse(
-		`type {{ .Name }}[R any] struct {
+		`type {{ .Name }} struct {
 			{{range .FieldList}}
 			{{.}}{{end}}
 		}
-		func (t {{.Name}}[R]) Accept(visitor Visitor[R]) R{
+		func (t {{.Name}}) Accept(visitor Visitor) any {
 			return visitor.Visit{{.Name}}(t)
 		}
 		`,
@@ -102,9 +102,9 @@ func defineVisitor(w io.Writer, types []string) error {
 	}
 
 	tmpl, err := template.New("visitorInterface").Parse(
-		`type Visitor[R any] interface {
+		`type Visitor interface {
 				{{range .TypeNames}}
-				Visit{{.}}(expr {{.}}[R]) R{{end}}
+				Visit{{.}}(expr {{.}}) any{{end}}
 			}
 		`,
 	)
@@ -134,9 +134,9 @@ func main() {
 	outputDir := args[1]
 
 	err := defineAst(outputDir, "Expr", []string{
-		"Unary: operator Token, right Expr[R]",
-		"Binary: left Expr[R], operator Token, right Expr[R]",
-		"Grouping: expression Expr[R]",
+		"Unary: operator Token, right Expr",
+		"Binary: left Expr, operator Token, right Expr",
+		"Grouping: expression Expr",
 		"Literal: value Object",
 	})
 	if err != nil {

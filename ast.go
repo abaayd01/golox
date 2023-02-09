@@ -1,46 +1,46 @@
 package main
 
-type Expr[R any] interface {
-	Accept(visitor Visitor[R]) R
+type Expr interface {
+	Accept(visitor Visitor) any
 }
-type Unary[R any] struct {
+type Unary struct {
 	operator Token
-	right    Expr[R]
+	right    Expr
 }
 
-func (t Unary[R]) Accept(visitor Visitor[R]) R {
+func (t Unary) Accept(visitor Visitor) any {
 	return visitor.VisitUnary(t)
 }
 
-type Binary[R any] struct {
-	left     Expr[R]
+type Binary struct {
+	left     Expr
 	operator Token
-	right    Expr[R]
+	right    Expr
 }
 
-func (t Binary[R]) Accept(visitor Visitor[R]) R {
+func (t Binary) Accept(visitor Visitor) any {
 	return visitor.VisitBinary(t)
 }
 
-type Grouping[R any] struct {
-	expression Expr[R]
+type Grouping struct {
+	expression Expr
 }
 
-func (t Grouping[R]) Accept(visitor Visitor[R]) R {
+func (t Grouping) Accept(visitor Visitor) any {
 	return visitor.VisitGrouping(t)
 }
 
-type Literal[R any] struct {
+type Literal struct {
 	value Object
 }
 
-func (t Literal[R]) Accept(visitor Visitor[R]) R {
+func (t Literal) Accept(visitor Visitor) any {
 	return visitor.VisitLiteral(t)
 }
 
-type Visitor[R any] interface {
-	VisitUnary(expr Unary[R]) R
-	VisitBinary(expr Binary[R]) R
-	VisitGrouping(expr Grouping[R]) R
-	VisitLiteral(expr Literal[R]) R
+type Visitor interface {
+	VisitUnary(expr Unary) any
+	VisitBinary(expr Binary) any
+	VisitGrouping(expr Grouping) any
+	VisitLiteral(expr Literal) any
 }
