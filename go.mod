@@ -1,3 +1,3 @@
-module golox
+module github.com/abaayd01/golox
 
-go 1.19
+go 1.20

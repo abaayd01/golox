@@ -192,7 +192,12 @@ func (s *Scanner) scanTokens() ([]Token, error) {
 		s.scanToken()
 	}
 
-	s.tokens = append(s.tokens)
+	s.tokens = append(s.tokens, Token{
+		tokenType: EOF,
+		lexeme:    "",
+		literal:   nil,
+		line:      s.line,
+	})
 	return s.tokens, nil
 }
 

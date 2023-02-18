@@ -10,45 +10,6 @@ type Parser struct {
 	current int
 }
 
-var ParseError = errors.New("parse error")
-
-func (p *Parser) error(token Token, message string) error {
-	p.Lox.error(token, message)
-	return ParseError
-}
-
-func (p *Parser) isAtEndOfPreviousStatement() bool {
-	return p.previous().tokenType == SEMICOLON
-}
-
-// map of keywords which start a statement
-var statementStarterKeywords = map[TokenType]bool{
-	CLASS:  true,
-	FUN:    true,
-	VAR:    true,
-	FOR:    true,
-	IF:     true,
-	WHILE:  true,
-	PRINT:  true,
-	RETURN: true,
-}
-
-func (p *Parser) isAtStartOfNewStatement() bool {
-	_, ok := statementStarterKeywords[p.peek().tokenType]
-	return ok
-}
-
-func (p *Parser) synchronize() {
-	p.advance()
-
-	for !p.isAtEnd() {
-		if p.isAtEndOfPreviousStatement() || p.isAtStartOfNewStatement() {
-			return
-		}
-		p.advance()
-	}
-}
-
 func (p *Parser) Parse() (Expr, error) {
 	expr, err := p.expression()
 	if err != nil {
@@ -206,7 +167,7 @@ func (p *Parser) primary() (Expr, error) {
 		return Grouping{expression: expr}, nil
 	}
 
-	return nil, nil
+	return nil, p.error(p.peek(), "Expect expression.")
 }
 
 func (p *Parser) peek() Token {
@@ -253,5 +214,45 @@ func (p *Parser) consume(tokenType TokenType, message string) (*Token, error) {
 }
 
 func (p *Parser) isAtEnd() bool {
-	return false
+	return p.peek().tokenType == EOF
+}
+
+// error handling code
+var ParseError = errors.New("parse error")
+
+func (p *Parser) error(token Token, message string) error {
+	p.Lox.error(token, message)
+	return ParseError
+}
+
+func (p *Parser) isAtEndOfPreviousStatement() bool {
+	return p.previous().tokenType == SEMICOLON
+}
+
+// map of keywords which start a statement
+var statementStarterKeywords = map[TokenType]bool{
+	CLASS:  true,
+	FUN:    true,
+	VAR:    true,
+	FOR:    true,
+	IF:     true,
+	WHILE:  true,
+	PRINT:  true,
+	RETURN: true,
+}
+
+func (p *Parser) isAtStartOfNewStatement() bool {
+	_, ok := statementStarterKeywords[p.peek().tokenType]
+	return ok
+}
+
+func (p *Parser) synchronize() {
+	p.advance()
+
+	for !p.isAtEnd() {
+		if p.isAtEndOfPreviousStatement() || p.isAtStartOfNewStatement() {
+			return
+		}
+		p.advance()
+	}
 }

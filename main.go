@@ -38,11 +38,18 @@ func (l *Lox) run(source string) error {
 		return err
 	}
 
-	// just print out the tokens for now
-	for _, token := range tokens {
-		fmt.Println(token, token.line)
+	parser := Parser{
+		Lox:     l,
+		Tokens:  tokens,
+		current: 0,
+	}
+	expr, err := parser.Parse()
+	if err != nil {
+		return err
 	}
 
+	printer := AstPrinter{}
+	fmt.Println(printer.Print(expr))
 	return nil
 }
 
