@@ -8,3 +8,8 @@ func TestParser_Parse(t *testing.T) {
 	l := Lox{}
 	_ = l.run("1+2")
 }
+
+func TestLox_Run(t *testing.T) {
+	l := Lox{}
+	_ = l.run("1 + 2")
+}

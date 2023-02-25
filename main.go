@@ -8,7 +8,8 @@ import (
 )
 
 type Lox struct {
-	hadError bool
+	hadError        bool
+	hadRuntimeError bool
 }
 
 func (l *Lox) reportError(line int, message string) {
@@ -28,6 +29,11 @@ func (l *Lox) error(token Token, message string) {
 	}
 }
 
+func (l *Lox) runtimeError(err RuntimeError) {
+	_, _ = fmt.Fprintf(os.Stderr, "[line %d] %s\n", err.Token.line, err.Error())
+	l.hadRuntimeError = true
+}
+
 func (l *Lox) run(source string) error {
 	scanner := Scanner{
 		lox:    l,
@@ -44,12 +50,18 @@ func (l *Lox) run(source string) error {
 		current: 0,
 	}
 	expr, err := parser.Parse()
-	if err != nil {
+	if err != nil { // stop if there was a parsing error
 		return err
 	}
 
-	printer := AstPrinter{}
-	fmt.Println(printer.Print(expr))
+	interpreter := Interpreter{
+		Lox: l,
+	}
+	_ = interpreter.Interpret(expr) // don't blow up if there's runtime errors?
+
+	// temporary AstPrinter code
+	//printer := AstPrinter{}
+	//fmt.Println(printer.Print(expr))
 	return nil
 }
 
@@ -60,6 +72,9 @@ func (l *Lox) runFile(path string) error {
 		return fmt.Errorf("runFile error, os.ReadFile: %w", err)
 	}
 
+	// TODO: re-think how errors are propagated up from Parser + Interpreter into Lox entry point.
+	// Need to figure out how to best deal with runtime errors vs. parsing errors.
+	// At the moment run doesn't return an error for runtime errors, the Interpreter will just set the hadRuntimeError flag.
 	return l.run(string(bytes))
 }
 
@@ -97,7 +112,7 @@ func main() {
 	if len(args) == 2 {
 		err := l.runFile(args[1])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 
 		return
