@@ -123,12 +123,13 @@ func (p *Parser) factor() (Expr, error) {
 // unary → ( "!" | "-" ) unary | primary ;
 func (p *Parser) unary() (Expr, error) {
 	if p.match(BANG, MINUS) {
+		op := p.previous()
 		right, err := p.unary()
 		if err != nil {
 			return nil, err
 		}
 		return Unary{
-			operator: p.previous(),
+			operator: op,
 			right:    right,
 		}, nil
 	}
