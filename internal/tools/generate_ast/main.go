@@ -12,17 +12,22 @@ import (
 )
 
 func defineAst(outputDir string, baseName string, types []string) error {
-	outputFile := fmt.Sprintf("%s/ast.go", outputDir)
+	outputFile := fmt.Sprintf("%s/%s.go", outputDir, strings.ToLower(baseName))
 	buf := bytes.Buffer{}
 
-	_, err := buf.WriteString("package main\n\n")
+	_, err := buf.WriteString(`
+	// this file is auto-generated with bin/generate_ast
+	// DO NOT EDIT
+	package main
+
+	`)
 	if err != nil {
-		return err
+		return fmt.Errorf("error writing string to buf: %w", err)
 	}
 
 	tmpl, err := template.New("exprStruct").Parse(
 		`type {{.Name}} interface {
-			Accept(visitor Visitor) any
+			Accept(visitor {{.Name}}Visitor) (any, error)
 		}
 		`,
 	)
@@ -38,7 +43,7 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	for _, s := range types {
 		className := strings.Trim(strings.Split(s, ":")[0], " ")
 		fieldNames := strings.Split(strings.Trim(strings.Split(s, ":")[1], " "), ",")
-		err = defineType(&buf, className, fieldNames)
+		err = defineType(&buf, className, fieldNames, baseName)
 		if err != nil {
 			return err
 		}
@@ -47,7 +52,7 @@ func defineAst(outputDir string, baseName string, types []string) error {
 		return err
 	}
 
-	err = defineVisitor(&buf, types)
+	err = defineVisitor(&buf, types, baseName)
 	if err != nil {
 		return err
 	}
@@ -61,20 +66,20 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	// writing it out to file
 	f, err := os.Create(outputFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("error writing buf to outputFile: %w", err)
 	}
 	_, err = f.Write(fmtted)
 
 	return err
 }
 
-func defineType(w io.Writer, typeName string, fieldList []string) error {
+func defineType(w io.Writer, typeName string, fieldList []string, baseName string) error {
 	t, err := template.New("astStruct").Parse(
 		`type {{ .Name }} struct {
 			{{range .FieldList}}
 			{{.}}{{end}}
 		}
-		func (t {{.Name}}) Accept(visitor Visitor) any {
+		func (t {{.Name}}) Accept(visitor {{.BaseName}}Visitor) (any, error) {
 			return visitor.Visit{{.Name}}(t)
 		}
 		`,
@@ -87,14 +92,16 @@ func defineType(w io.Writer, typeName string, fieldList []string) error {
 		struct {
 			Name      string
 			FieldList []string
+			BaseName  string
 		}{
 			Name:      typeName,
 			FieldList: fieldList,
+			BaseName:  baseName,
 		},
 	)
 }
 
-func defineVisitor(w io.Writer, types []string) error {
+func defineVisitor(w io.Writer, types []string, baseName string) error {
 	var typeNames []string
 	for _, s := range types {
 		typeName := strings.Trim(strings.Split(s, ":")[0], " ")
@@ -102,9 +109,9 @@ func defineVisitor(w io.Writer, types []string) error {
 	}
 
 	tmpl, err := template.New("visitorInterface").Parse(
-		`type Visitor interface {
+		`type {{.BaseName}}Visitor interface {
 				{{range .TypeNames}}
-				Visit{{.}}(expr {{.}}) any{{end}}
+				Visit{{.}}(expr {{.}}) (any, error){{end}}
 			}
 		`,
 	)
@@ -113,8 +120,10 @@ func defineVisitor(w io.Writer, types []string) error {
 	}
 
 	err = tmpl.Execute(w, struct {
+		BaseName  string
 		TypeNames []string
 	}{
+		BaseName:  baseName,
 		TypeNames: typeNames,
 	})
 	if err != nil {
@@ -139,6 +148,15 @@ func main() {
 		"Grouping: expression Expr",
 		"Literal: value Object",
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = defineAst(outputDir, "Stmt", []string{
+		"Expression: expression Expr",
+		"Print: expression Expr",
+	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
