@@ -48,6 +48,21 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	left, _ := i.evaluate(expr.left)
 	right, _ := i.evaluate(expr.right)
 
+	operandsAreBothStrings := checkStringOperands(left, right)
+
+	// support for string concatenation
+	if operandsAreBothStrings {
+		leftStr, _ := expr.left.(any).(string)
+		rightStr, _ := expr.right.(any).(string)
+
+		switch expr.operator.tokenType {
+		case PLUS:
+			return fmt.Sprintf("%s%s", leftStr, rightStr), nil
+		}
+
+		return nil, NewRuntimeError(expr.operator, fmt.Sprintf("Cannot use operator '%s' with string operands", expr.operator.lexeme))
+	}
+
 	err := checkNumberOperands(expr.operator, left, right)
 	if err != nil {
 		return nil, err
@@ -57,7 +72,7 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	case MINUS:
 		return left.(float64) - right.(float64), nil
 	case PLUS:
-		return left.(float64) + right.(float64), nil // nb: leaving out plus for string concatenation
+		return left.(float64) + right.(float64), nil
 	case SLASH:
 		return left.(float64) / right.(float64), nil
 	case STAR:
@@ -77,6 +92,12 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func checkStringOperands(left any, right any) bool {
+	_, leftIsString := left.(string)
+	_, rightIsString := right.(string)
+	return leftIsString && rightIsString
 }
 
 func (i Interpreter) evaluate(expr Expr) (any, error) {
@@ -100,7 +121,7 @@ func checkNumberOperands(op Token, left any, right any) error {
 	_, leftOk := left.(float64)
 	_, rightOk := right.(float64)
 	if !leftOk || !rightOk {
-		return NewRuntimeError(op, "Operands must be numbers.")
+		return NewRuntimeError(op, "Operands must both be numbers.")
 	}
 	return nil
 }
