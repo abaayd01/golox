@@ -8,7 +8,32 @@ type Interpreter struct {
 	Lox *Lox
 }
 
-func (i Interpreter) Interpret(expr Expr) (any, error) {
+func (i Interpreter) InterpretStatements(statements []Stmt) error {
+	for _, stmt := range statements {
+		err := i.execute(stmt)
+		if err != nil {
+			i.Lox.runtimeError(err.(RuntimeError))
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i Interpreter) VisitStmtExpression(stmt StmtExpression) (any, error) {
+	return i.evaluate(stmt.expression)
+}
+
+func (i Interpreter) VisitStmtPrint(stmt StmtPrint) (any, error) {
+	value, err := i.evaluate(stmt.expression)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(value)
+	return nil, nil
+}
+
+func (i Interpreter) InterpretExpression(expr Expr) (any, error) {
 	val, err := i.evaluate(expr)
 	if err != nil {
 		i.Lox.runtimeError(err.(RuntimeError))
@@ -97,6 +122,11 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func (i Interpreter) execute(stmt Stmt) error {
+	_, err := stmt.Accept(i)
+	return err
 }
 
 func (i Interpreter) evaluate(expr Expr) (any, error) {

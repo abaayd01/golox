@@ -17,7 +17,7 @@ func (l *Lox) reportError(line int, message string) {
 }
 
 func (l *Lox) report(line int, where string, message string) {
-	_, _ = fmt.Fprintf(os.Stderr, "[line: %d] Error%s: %s]\n", line, where, message)
+	_, _ = fmt.Fprintf(os.Stderr, "[line: %d] Error%s: %s\n", line, where, message)
 	l.hadError = true
 }
 
@@ -49,7 +49,7 @@ func (l *Lox) run(source string) error {
 		Tokens:  tokens,
 		current: 0,
 	}
-	expr, err := parser.Parse()
+	statements, err := parser.Parse()
 	if err != nil { // stop if there was a parsing error
 		return err
 	}
@@ -57,7 +57,9 @@ func (l *Lox) run(source string) error {
 	interpreter := Interpreter{
 		Lox: l,
 	}
-	_, _ = interpreter.Interpret(expr) // don't blow up if there's runtime errors?
+
+	_ = interpreter.InterpretStatements(statements)
+	//_, _ = interpreter.InterpretExpression(expr) // don't blow up if there's runtime errors?
 
 	// temporary AstPrinter code
 	//printer := AstPrinter{}

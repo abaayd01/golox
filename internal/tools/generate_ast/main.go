@@ -153,8 +153,8 @@ func main() {
 	}
 
 	err = defineAst(outputDir, "Stmt", []string{
-		"Expression: expression Expr",
-		"Print: expression Expr",
+		"StmtExpression: expression Expr",
+		"StmtPrint: expression Expr",
 	})
 
 	if err != nil {

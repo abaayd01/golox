@@ -5,23 +5,23 @@ package main
 type Stmt interface {
 	Accept(visitor StmtVisitor) (any, error)
 }
-type Expression struct {
+type StmtExpression struct {
 	expression Expr
 }
 
-func (t Expression) Accept(visitor StmtVisitor) (any, error) {
-	return visitor.VisitExpression(t)
+func (t StmtExpression) Accept(visitor StmtVisitor) (any, error) {
+	return visitor.VisitStmtExpression(t)
 }
 
-type Print struct {
+type StmtPrint struct {
 	expression Expr
 }
 
-func (t Print) Accept(visitor StmtVisitor) (any, error) {
-	return visitor.VisitPrint(t)
+func (t StmtPrint) Accept(visitor StmtVisitor) (any, error) {
+	return visitor.VisitStmtPrint(t)
 }
 
 type StmtVisitor interface {
-	VisitExpression(expr Expression) (any, error)
-	VisitPrint(expr Print) (any, error)
+	VisitStmtExpression(expr StmtExpression) (any, error)
+	VisitStmtPrint(expr StmtPrint) (any, error)
 }

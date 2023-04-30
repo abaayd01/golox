@@ -65,7 +65,7 @@ func TestInterpreter_Interpret(t *testing.T) {
 				Lox: &Lox{},
 			}
 
-			result, err := interpreter.Interpret(tc.input)
+			result, err := interpreter.InterpretExpression(tc.input)
 
 			is.NoErr(err)
 			is.Equal(result, tc.expected)
@@ -90,7 +90,7 @@ func TestInterpreter_Interpret_DivideByZero(t *testing.T) {
 		Lox: &Lox{},
 	}
 
-	_, err := interpreter.Interpret(input)
+	_, err := interpreter.InterpretExpression(input)
 
 	is.True(err != nil)
 	is.True(interpreter.Lox.hadRuntimeError)
