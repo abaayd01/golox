@@ -74,6 +74,11 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	case PLUS:
 		return left.(float64) + right.(float64), nil
 	case SLASH:
+		err = checkDivideByZero(expr.operator, right)
+		if err != nil {
+			return nil, err
+		}
+
 		return left.(float64) / right.(float64), nil
 	case STAR:
 		return left.(float64) * right.(float64), nil
@@ -92,12 +97,6 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	}
 
 	return nil, nil
-}
-
-func checkStringOperands(left any, right any) bool {
-	_, leftIsString := left.(string)
-	_, rightIsString := right.(string)
-	return leftIsString && rightIsString
 }
 
 func (i Interpreter) evaluate(expr Expr) (any, error) {
@@ -123,6 +122,20 @@ func checkNumberOperands(op Token, left any, right any) error {
 	if !leftOk || !rightOk {
 		return NewRuntimeError(op, "Operands must both be numbers.")
 	}
+	return nil
+}
+
+func checkStringOperands(left any, right any) bool {
+	_, leftIsString := left.(string)
+	_, rightIsString := right.(string)
+	return leftIsString && rightIsString
+}
+
+func checkDivideByZero(op Token, right any) error {
+	if right == 0.0 {
+		return NewRuntimeError_DivideByZero(op)
+	}
+
 	return nil
 }
 
@@ -167,6 +180,10 @@ func NewRuntimeError(token Token, msg string) RuntimeError {
 		Token: token,
 		msg:   msg,
 	}
+}
+
+func NewRuntimeError_DivideByZero(token Token) RuntimeError {
+	return NewRuntimeError(token, "Cannot divide by zero")
 }
 
 func (e RuntimeError) Error() string {

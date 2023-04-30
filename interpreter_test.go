@@ -72,3 +72,30 @@ func TestInterpreter_Interpret(t *testing.T) {
 		})
 	}
 }
+
+func TestInterpreter_Interpret_DivideByZero(t *testing.T) {
+	is := is.New(t)
+	input := Binary{
+		operator: Token{
+			tokenType: SLASH,
+			lexeme:    "/",
+			literal:   nil,
+			line:      0,
+		},
+		left:  Literal{value: 10.0},
+		right: Literal{value: 0.0},
+	}
+
+	interpreter := Interpreter{
+		Lox: &Lox{},
+	}
+
+	_, err := interpreter.Interpret(input)
+
+	is.True(err != nil)
+	is.True(interpreter.Lox.hadRuntimeError)
+	is.Equal(err, RuntimeError{
+		Token: input.operator,
+		msg:   "Cannot divide by zero",
+	})
+}
