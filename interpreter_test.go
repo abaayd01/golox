@@ -1,80 +1,74 @@
 package main
 
 import (
+	"github.com/matryer/is"
 	"testing"
 )
 
 func TestInterpreter_Interpret(t *testing.T) {
-	expr := Unary{
-		operator: Token{
-			tokenType: MINUS,
-			lexeme:    "-",
-			literal:   nil,
-			line:      0,
+	type test struct {
+		description string
+		input       Expr
+		expected    any
+	}
+
+	tests := []test{
+		{
+			description: "it adds two numbers",
+			input: Binary{
+				operator: Token{
+					tokenType: PLUS,
+					lexeme:    "+",
+					literal:   nil,
+					line:      0,
+				},
+				left:  Literal{value: 1.0},
+				right: Literal{value: 2.0},
+			},
+			expected: 3.0,
 		},
-		right: Literal{value: "abc"},
-	}
-
-	l := Lox{}
-	interpreter := Interpreter{
-		Lox: &l,
-	}
-	_ = interpreter.Interpret(expr)
-}
-
-func TestInterpreter_AddNumbers(t *testing.T) {
-	expr := Binary{
-		operator: Token{
-			tokenType: PLUS,
-			lexeme:    "+",
-			literal:   nil,
-			line:      0,
+		{
+			description: "it subtracts two numbers",
+			input: Binary{
+				operator: Token{
+					tokenType: MINUS,
+					lexeme:    "-",
+					literal:   nil,
+					line:      0,
+				},
+				left:  Literal{value: 1.0},
+				right: Literal{value: 2.0},
+			},
+			expected: -1.0,
 		},
-		left:  Literal{value: 1.0},
-		right: Literal{value: 2.0},
-	}
-
-	l := Lox{}
-	interpreter := Interpreter{
-		Lox: &l,
-	}
-	_ = interpreter.Interpret(expr)
-}
-
-func TestInterpreter_ConcatStrings(t *testing.T) {
-	expr := Binary{
-		operator: Token{
-			tokenType: PLUS,
-			lexeme:    "+",
-			literal:   nil,
-			line:      0,
+		{
+			description: "concatenates two strings",
+			input: Binary{
+				operator: Token{
+					tokenType: PLUS,
+					lexeme:    "+",
+					literal:   nil,
+					line:      0,
+				},
+				left:  Literal{value: "hello "},
+				right: Literal{value: "world!"},
+			},
+			expected: "hello world!",
 		},
-		left:  Literal{value: "a"},
-		right: Literal{value: "b"},
 	}
 
-	l := Lox{}
-	interpreter := Interpreter{
-		Lox: &l,
-	}
-	_ = interpreter.Interpret(expr)
-}
+	is := is.NewRelaxed(t)
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			is := is.NewRelaxed(t)
+			interpreter := Interpreter{
+				Lox: &Lox{},
+			}
 
-func TestInterpreter_ConcatStringsError(t *testing.T) {
-	expr := Binary{
-		operator: Token{
-			tokenType: MINUS,
-			lexeme:    "-",
-			literal:   nil,
-			line:      0,
-		},
-		left:  Literal{value: "a"},
-		right: Literal{value: "b"},
-	}
+			result, err := interpreter.Interpret(tc.input)
 
-	l := Lox{}
-	interpreter := Interpreter{
-		Lox: &l,
+			is.NoErr(err)
+			is.Equal(result, tc.expected)
+		})
 	}
-	_ = interpreter.Interpret(expr)
 }

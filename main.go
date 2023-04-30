@@ -57,7 +57,7 @@ func (l *Lox) run(source string) error {
 	interpreter := Interpreter{
 		Lox: l,
 	}
-	_ = interpreter.Interpret(expr) // don't blow up if there's runtime errors?
+	_, _ = interpreter.Interpret(expr) // don't blow up if there's runtime errors?
 
 	// temporary AstPrinter code
 	//printer := AstPrinter{}

@@ -8,15 +8,15 @@ type Interpreter struct {
 	Lox *Lox
 }
 
-func (i Interpreter) Interpret(expr Expr) error {
+func (i Interpreter) Interpret(expr Expr) (any, error) {
 	val, err := i.evaluate(expr)
 	if err != nil {
 		i.Lox.runtimeError(err.(RuntimeError))
-		return err
+		return nil, err
 	}
 
 	fmt.Println(stringify(val))
-	return nil
+	return val, nil
 }
 
 func (i Interpreter) VisitLiteral(expr Literal) (any, error) {
@@ -52,8 +52,8 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 
 	// support for string concatenation
 	if operandsAreBothStrings {
-		leftStr, _ := expr.left.(any).(string)
-		rightStr, _ := expr.right.(any).(string)
+		leftStr, _ := left.(string)
+		rightStr, _ := right.(string)
 
 		switch expr.operator.tokenType {
 		case PLUS:
