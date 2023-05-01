@@ -21,7 +21,17 @@ func (t StmtPrint) Accept(visitor StmtVisitor) (any, error) {
 	return visitor.VisitStmtPrint(t)
 }
 
+type StmtVar struct {
+	name        Token
+	initializer Expr
+}
+
+func (t StmtVar) Accept(visitor StmtVisitor) (any, error) {
+	return visitor.VisitStmtVar(t)
+}
+
 type StmtVisitor interface {
 	VisitStmtExpression(expr StmtExpression) (any, error)
 	VisitStmtPrint(expr StmtPrint) (any, error)
+	VisitStmtVar(expr StmtVar) (any, error)
 }

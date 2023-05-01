@@ -14,14 +14,43 @@ func (p *Parser) Parse() ([]Stmt, error) {
 	var statements []Stmt
 
 	for !p.isAtEnd() {
-		stmt, err := p.statement()
+		decl, err := p.declaration()
 		if err != nil {
 			return nil, err
 		}
-		statements = append(statements, stmt)
+		statements = append(statements, decl)
 	}
 
 	return statements, nil
+}
+
+func (p *Parser) declaration() (Stmt, error) {
+	if p.match(VAR) {
+		return p.varDeclaration()
+	}
+
+	return p.statement()
+}
+
+func (p *Parser) varDeclaration() (Stmt, error) {
+	name, err := p.consume(IDENTIFIER, "Expect variable name.")
+	if err != nil {
+		return nil, err
+	}
+
+	var initializer Expr
+	if p.match(EQUAL) {
+		initializer, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = p.consume(SEMICOLON, "Expect ';' after variable declaration.")
+	return StmtVar{
+		name:        *name,
+		initializer: initializer,
+	}, nil
 }
 
 func (p *Parser) statement() (Stmt, error) {
@@ -193,6 +222,10 @@ func (p *Parser) primary() (Expr, error) {
 
 	if p.match(NIL) {
 		return Literal{value: nil}, nil
+	}
+
+	if p.match(IDENTIFIER) {
+		return Var{name: p.previous()}, nil
 	}
 
 	if p.match(LEFT_PAREN) {

@@ -147,6 +147,7 @@ func main() {
 		"Binary: left Expr, operator Token, right Expr",
 		"Grouping: expression Expr",
 		"Literal: value Object",
+		"Var: name Token",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -155,6 +156,7 @@ func main() {
 	err = defineAst(outputDir, "Stmt", []string{
 		"StmtExpression: expression Expr",
 		"StmtPrint: expression Expr",
+		"StmtVar: name Token, initializer Expr",
 	})
 
 	if err != nil {

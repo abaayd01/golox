@@ -33,6 +33,11 @@ func (i Interpreter) VisitStmtPrint(stmt StmtPrint) (any, error) {
 	return nil, nil
 }
 
+func (i Interpreter) VisitStmtVar(expr StmtVar) (any, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (i Interpreter) InterpretExpression(expr Expr) (any, error) {
 	val, err := i.evaluate(expr)
 	if err != nil {
@@ -122,6 +127,11 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func (i Interpreter) VisitVar(expr Var) (any, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (i Interpreter) execute(stmt Stmt) error {

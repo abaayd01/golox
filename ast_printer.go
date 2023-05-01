@@ -47,3 +47,7 @@ func (a AstPrinter) VisitGrouping(expr Grouping) (any, error) {
 func (a AstPrinter) VisitLiteral(expr Literal) (any, error) {
 	return fmt.Sprintf("%v", expr.value), nil
 }
+
+func (a AstPrinter) VisitVar(expr Var) (any, error) {
+	return fmt.Sprintf("%v", expr.name.lexeme), nil
+}

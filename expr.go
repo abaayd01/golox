@@ -40,9 +40,18 @@ func (t Literal) Accept(visitor ExprVisitor) (any, error) {
 	return visitor.VisitLiteral(t)
 }
 
+type Var struct {
+	name Token
+}
+
+func (t Var) Accept(visitor ExprVisitor) (any, error) {
+	return visitor.VisitVar(t)
+}
+
 type ExprVisitor interface {
 	VisitUnary(expr Unary) (any, error)
 	VisitBinary(expr Binary) (any, error)
 	VisitGrouping(expr Grouping) (any, error)
 	VisitLiteral(expr Literal) (any, error)
+	VisitVar(expr Var) (any, error)
 }
