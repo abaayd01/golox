@@ -5,7 +5,8 @@ import (
 )
 
 type Interpreter struct {
-	Lox *Lox
+	Lox         *Lox
+	Environment *Environment
 }
 
 func (i Interpreter) InterpretStatements(statements []Stmt) error {
@@ -33,9 +34,19 @@ func (i Interpreter) VisitStmtPrint(stmt StmtPrint) (any, error) {
 	return nil, nil
 }
 
-func (i Interpreter) VisitStmtVar(expr StmtVar) (any, error) {
-	//TODO implement me
-	panic("implement me")
+func (i Interpreter) VisitStmtVar(stmt StmtVar) (any, error) {
+	if stmt.initializer == nil {
+		i.Environment.Define(stmt.name.lexeme, nil)
+		return nil, nil
+	}
+
+	value, err := i.evaluate(stmt.initializer)
+	if err != nil {
+		return nil, err
+	}
+
+	i.Environment.Define(stmt.name.lexeme, value)
+	return value, nil
 }
 
 func (i Interpreter) InterpretExpression(expr Expr) (any, error) {
@@ -130,8 +141,7 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 }
 
 func (i Interpreter) VisitVar(expr Var) (any, error) {
-	//TODO implement me
-	panic("implement me")
+	return i.Environment.Get(expr.name)
 }
 
 func (i Interpreter) execute(stmt Stmt) error {

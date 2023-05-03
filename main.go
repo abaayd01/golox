@@ -54,8 +54,10 @@ func (l *Lox) run(source string) error {
 		return err
 	}
 
+	e := &Environment{Values: map[string]any{}}
 	interpreter := Interpreter{
-		Lox: l,
+		Lox:         l,
+		Environment: e,
 	}
 
 	_ = interpreter.InterpretStatements(statements)
