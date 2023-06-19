@@ -150,7 +150,7 @@ func (i Interpreter) VisitAssign(expr Assign) (any, error) {
 		return nil, err
 	}
 
-	i.Environment.Define(expr.name.lexeme, val)
+	i.Environment.Assign(expr.name, val)
 
 	return nil, nil
 }

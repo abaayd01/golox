@@ -19,3 +19,14 @@ func (e *Environment) Get(name Token) (any, error) {
 
 	return val, nil
 }
+
+func (e *Environment) Assign(name Token, value any) error {
+	_, err := e.Get(name)
+
+	if err != nil {
+		return err
+	}
+
+	e.Values[name.lexeme] = value
+	return nil
+}
