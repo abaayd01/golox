@@ -51,3 +51,7 @@ func (a AstPrinter) VisitLiteral(expr Literal) (any, error) {
 func (a AstPrinter) VisitVar(expr Var) (any, error) {
 	return fmt.Sprintf("%v", expr.name.lexeme), nil
 }
+
+func (a AstPrinter) VisitAssign(expr Assign) (any, error) {
+	return fmt.Sprintf("%v = %v", expr.name.lexeme, expr.value), nil
+}

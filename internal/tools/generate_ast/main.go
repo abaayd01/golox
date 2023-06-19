@@ -148,6 +148,7 @@ func main() {
 		"Grouping: expression Expr",
 		"Literal: value Object",
 		"Var: name Token",
+		"Assign: name Token, value Expr",
 	})
 	if err != nil {
 		log.Fatal(err)

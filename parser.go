@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"reflect"
 )
 
 type Parser struct {
@@ -88,7 +89,36 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 }
 
 func (p *Parser) expression() (Expr, error) {
-	return p.equality()
+	return p.assignment()
+}
+
+func (p *Parser) assignment() (Expr, error) {
+	expr, err := p.equality() // lhs of eq
+	if err != nil {
+		return nil, err
+	}
+
+	if p.match(EQUAL) {
+		eq := p.previous()
+		value, err := p.assignment() // evaluating the rhs
+		if err != nil {
+			return nil, err
+		}
+
+		isVar := reflect.TypeOf(expr).String() == "main.Var"
+
+		if isVar {
+			name := expr.(Var).name
+			return Assign{
+				name:  name,
+				value: value,
+			}, nil
+		}
+
+		return nil, p.error(eq, "Invalid assignment target.")
+	}
+
+	return expr, nil
 }
 
 // Grammar Production:

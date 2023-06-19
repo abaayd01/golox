@@ -144,6 +144,17 @@ func (i Interpreter) VisitVar(expr Var) (any, error) {
 	return i.Environment.Get(expr.name)
 }
 
+func (i Interpreter) VisitAssign(expr Assign) (any, error) {
+	val, err := i.evaluate(expr.value)
+	if err != nil {
+		return nil, err
+	}
+
+	i.Environment.Define(expr.name.lexeme, val)
+
+	return nil, nil
+}
+
 func (i Interpreter) execute(stmt Stmt) error {
 	_, err := stmt.Accept(i)
 	return err
