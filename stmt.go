@@ -30,8 +30,17 @@ func (t StmtVar) Accept(visitor StmtVisitor) (any, error) {
 	return visitor.VisitStmtVar(t)
 }
 
+type StmtBlock struct {
+	statements []Stmt
+}
+
+func (t StmtBlock) Accept(visitor StmtVisitor) (any, error) {
+	return visitor.VisitStmtBlock(t)
+}
+
 type StmtVisitor interface {
 	VisitStmtExpression(expr StmtExpression) (any, error)
 	VisitStmtPrint(expr StmtPrint) (any, error)
 	VisitStmtVar(expr StmtVar) (any, error)
+	VisitStmtBlock(expr StmtBlock) (any, error)
 }

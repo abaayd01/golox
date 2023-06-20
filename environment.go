@@ -3,7 +3,19 @@ package main
 import "fmt"
 
 type Environment struct {
-	Values map[string]any
+	EnclosingEnv *Environment
+	Values       map[string]any
+}
+
+func NewEnvironment() *Environment {
+	return &Environment{Values: map[string]any{}}
+}
+
+func NewEnvironmentWithEnclosing(env *Environment) *Environment {
+	return &Environment{
+		EnclosingEnv: env,
+		Values:       map[string]any{},
+	}
 }
 
 func (e *Environment) Define(key string, value any) {
@@ -13,11 +25,15 @@ func (e *Environment) Define(key string, value any) {
 func (e *Environment) Get(name Token) (any, error) {
 	key := name.lexeme
 	val, ok := e.Values[key]
-	if !ok {
-		return nil, NewRuntimeError(name, fmt.Sprintf("Undefined variable '%s'.", name.lexeme))
+	if ok {
+		return val, nil
 	}
 
-	return val, nil
+	if e.EnclosingEnv != nil {
+		return e.EnclosingEnv.Get(name)
+	}
+
+	return nil, NewRuntimeError(name, fmt.Sprintf("Undefined variable '%s'.", name.lexeme))
 }
 
 func (e *Environment) Assign(name Token, value any) error {

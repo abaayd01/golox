@@ -158,6 +158,7 @@ func main() {
 		"StmtExpression: expression Expr",
 		"StmtPrint: expression Expr",
 		"StmtVar: name Token, initializer Expr",
+		"StmtBlock: statements []Stmt",
 	})
 
 	if err != nil {

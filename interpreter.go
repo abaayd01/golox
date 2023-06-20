@@ -49,6 +49,30 @@ func (i Interpreter) VisitStmtVar(stmt StmtVar) (any, error) {
 	return value, nil
 }
 
+func (i Interpreter) VisitStmtBlock(expr StmtBlock) (any, error) {
+	err := i.executeBlock(expr.statements, *NewEnvironmentWithEnclosing(i.Environment))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (i Interpreter) executeBlock(statements []Stmt, environment Environment) error {
+	prevEnv := i.Environment
+
+	for _, stmt := range statements {
+		i.Environment = &environment
+		err := i.execute(stmt)
+		if err != nil {
+			i.Environment = prevEnv
+			return err
+		}
+	}
+
+	i.Environment = prevEnv
+	return nil
+}
+
 func (i Interpreter) InterpretExpression(expr Expr) (any, error) {
 	val, err := i.evaluate(expr)
 	if err != nil {
