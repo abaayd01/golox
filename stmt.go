@@ -38,9 +38,20 @@ func (t StmtBlock) Accept(visitor StmtVisitor) (any, error) {
 	return visitor.VisitStmtBlock(t)
 }
 
+type StmtIf struct {
+	condition  Expr
+	thenBranch Stmt
+	elseBranch Stmt
+}
+
+func (t StmtIf) Accept(visitor StmtVisitor) (any, error) {
+	return visitor.VisitStmtIf(t)
+}
+
 type StmtVisitor interface {
 	VisitStmtExpression(expr StmtExpression) (any, error)
 	VisitStmtPrint(expr StmtPrint) (any, error)
 	VisitStmtVar(expr StmtVar) (any, error)
 	VisitStmtBlock(expr StmtBlock) (any, error)
+	VisitStmtIf(expr StmtIf) (any, error)
 }

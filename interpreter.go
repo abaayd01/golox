@@ -57,6 +57,21 @@ func (i Interpreter) VisitStmtBlock(expr StmtBlock) (any, error) {
 	return nil, nil
 }
 
+func (i Interpreter) VisitStmtIf(expr StmtIf) (any, error) {
+	cond, err := i.evaluate(expr.condition)
+	if err != nil {
+		return nil, err
+	}
+
+	if isTruthy(cond) {
+		i.execute(expr.thenBranch)
+	} else if expr.elseBranch != nil {
+		i.execute(expr.elseBranch)
+	}
+
+	return nil, nil
+}
+
 func (i Interpreter) executeBlock(statements []Stmt, environment Environment) error {
 	prevEnv := i.Environment
 
@@ -157,7 +172,7 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 		return left.(float64) <= right.(float64), nil
 	case BANG_EQUAL:
 		return !isEqual(left, right), nil
-	case EQUAL:
+	case EQUAL_EQUAL:
 		return isEqual(left, right), nil
 	}
 

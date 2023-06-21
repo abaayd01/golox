@@ -159,6 +159,7 @@ func main() {
 		"StmtPrint: expression Expr",
 		"StmtVar: name Token, initializer Expr",
 		"StmtBlock: statements []Stmt",
+		"StmtIf: condition Expr, thenBranch Stmt, elseBranch Stmt",
 	})
 
 	if err != nil {
