@@ -37,12 +37,16 @@ func (e *Environment) Get(name Token) (any, error) {
 }
 
 func (e *Environment) Assign(name Token, value any) error {
-	_, err := e.Get(name)
-
-	if err != nil {
-		return err
+	key := name.lexeme
+	_, ok := e.Values[key]
+	if ok {
+		e.Values[key] = value
+		return nil
 	}
 
-	e.Values[name.lexeme] = value
-	return nil
+	if e.EnclosingEnv != nil {
+		return e.EnclosingEnv.Assign(name, value)
+	}
+
+	return NewRuntimeError(name, fmt.Sprintf("Undefined variable '%s'.", name.lexeme))
 }
