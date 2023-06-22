@@ -56,6 +56,10 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 }
 
 func (p *Parser) statement() (Stmt, error) {
+	if p.match(FOR) {
+		return p.forStatement()
+	}
+
 	if p.match(IF) {
 		return p.ifStatement()
 	}
@@ -73,6 +77,97 @@ func (p *Parser) statement() (Stmt, error) {
 	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) forStatement() (Stmt, error) {
+	_, err := p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+	if err != nil {
+		return nil, err
+	}
+
+	var initializer Stmt
+	if p.match(SEMICOLON) {
+		initializer = nil
+	} else if p.match(VAR) {
+		v, err := p.varDeclaration()
+		if err != nil {
+			return nil, err
+		}
+
+		initializer = v
+	} else {
+		v, err := p.expressionStatement()
+		if err != nil {
+			return nil, err
+		}
+
+		initializer = v
+	}
+
+	var condition Expr
+	if !p.check(SEMICOLON) {
+		v, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+
+		condition = v
+	}
+
+	_, err = p.consume(SEMICOLON, "Expect ';' after loop condition.")
+	var increment Expr
+	if !p.check(RIGHT_PAREN) {
+		v, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+
+		increment = v
+	}
+
+	_, err = p.consume(RIGHT_PAREN, "Expect ')' after 'for' clauses.")
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	// transforming this into the AST for a while loop
+	if increment != nil {
+		body = StmtBlock{
+			statements: []Stmt{
+				body,
+				StmtExpression{
+					expression: increment,
+				},
+			},
+		}
+	}
+
+	if condition == nil {
+		condition = Literal{
+			value: true,
+		}
+	}
+
+	body = StmtWhile{
+		condition: condition,
+		body:      body,
+	}
+
+	if initializer != nil {
+		body = StmtBlock{
+			statements: []Stmt{
+				initializer,
+				body,
+			},
+		}
+	}
+
+	return body, nil
 }
 
 func (p *Parser) ifStatement() (Stmt, error) {
