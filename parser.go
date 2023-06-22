@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -61,6 +62,10 @@ func (p *Parser) statement() (Stmt, error) {
 
 	if p.match(PRINT) {
 		return p.printStatement()
+	}
+
+	if p.match(WHILE) {
+		return p.whileStatement()
 	}
 
 	if p.match(LEFT_BRACE) {
@@ -134,6 +139,34 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 		return nil, err
 	}
 	return StmtExpression{expression: expr}, nil
+}
+
+func (p *Parser) whileStatement() (Stmt, error) {
+	_, err := p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
+	if err != nil {
+		return nil, err
+	}
+
+	condition, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(RIGHT_PAREN, "Expect ')' after 'while' condition.")
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(body)
+	return StmtWhile{
+		condition: condition,
+		body:      body,
+	}, nil
 }
 
 func (p *Parser) blockStatement() (Stmt, error) {

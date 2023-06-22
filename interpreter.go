@@ -25,6 +25,25 @@ func (i Interpreter) VisitStmtExpression(stmt StmtExpression) (any, error) {
 	return i.evaluate(stmt.expression)
 }
 
+func (i Interpreter) VisitStmtWhile(stmt StmtWhile) (any, error) {
+	for {
+		cond, err := i.evaluate(stmt.condition)
+		if err != nil {
+			return nil, err
+		}
+
+		if !isTruthy(cond) {
+			break
+		}
+
+		err = i.execute(stmt.body)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
+}
+
 func (i Interpreter) VisitStmtPrint(stmt StmtPrint) (any, error) {
 	value, err := i.evaluate(stmt.expression)
 	if err != nil {

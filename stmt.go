@@ -48,10 +48,20 @@ func (t StmtIf) Accept(visitor StmtVisitor) (any, error) {
 	return visitor.VisitStmtIf(t)
 }
 
+type StmtWhile struct {
+	condition Expr
+	body      Stmt
+}
+
+func (t StmtWhile) Accept(visitor StmtVisitor) (any, error) {
+	return visitor.VisitStmtWhile(t)
+}
+
 type StmtVisitor interface {
 	VisitStmtExpression(expr StmtExpression) (any, error)
 	VisitStmtPrint(expr StmtPrint) (any, error)
 	VisitStmtVar(expr StmtVar) (any, error)
 	VisitStmtBlock(expr StmtBlock) (any, error)
 	VisitStmtIf(expr StmtIf) (any, error)
+	VisitStmtWhile(expr StmtWhile) (any, error)
 }

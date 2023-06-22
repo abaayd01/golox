@@ -161,6 +161,7 @@ func main() {
 		"StmtVar: name Token, initializer Expr",
 		"StmtBlock: statements []Stmt",
 		"StmtIf: condition Expr, thenBranch Stmt, elseBranch Stmt",
+		"StmtWhile: condition Expr, body Stmt",
 	})
 
 	if err != nil {
