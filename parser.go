@@ -163,7 +163,7 @@ func (p *Parser) expression() (Expr, error) {
 }
 
 func (p *Parser) assignment() (Expr, error) {
-	expr, err := p.equality() // lhs of eq
+	expr, err := p.logicalOr() // lhs of eq
 	if err != nil {
 		return nil, err
 	}
@@ -186,6 +186,54 @@ func (p *Parser) assignment() (Expr, error) {
 		}
 
 		return nil, p.error(eq, "Invalid assignment target.")
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) logicalOr() (Expr, error) {
+	expr, err := p.logicalAnd()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(OR) {
+		op := p.previous()
+		right, err := p.logicalAnd()
+		if err != nil {
+			return nil, err
+		}
+
+		return Logical{
+			left:     expr,
+			right:    right,
+			operator: op,
+		}, nil
+
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) logicalAnd() (Expr, error) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(AND) {
+		op := p.previous()
+		right, err := p.equality()
+		if err != nil {
+			return nil, err
+		}
+
+		return Logical{
+			left:     expr,
+			right:    right,
+			operator: op,
+		}, nil
+
 	}
 
 	return expr, nil

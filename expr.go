@@ -57,6 +57,16 @@ func (t Assign) Accept(visitor ExprVisitor) (any, error) {
 	return visitor.VisitAssign(t)
 }
 
+type Logical struct {
+	left     Expr
+	operator Token
+	right    Expr
+}
+
+func (t Logical) Accept(visitor ExprVisitor) (any, error) {
+	return visitor.VisitLogical(t)
+}
+
 type ExprVisitor interface {
 	VisitUnary(expr Unary) (any, error)
 	VisitBinary(expr Binary) (any, error)
@@ -64,4 +74,5 @@ type ExprVisitor interface {
 	VisitLiteral(expr Literal) (any, error)
 	VisitVar(expr Var) (any, error)
 	VisitAssign(expr Assign) (any, error)
+	VisitLogical(expr Logical) (any, error)
 }

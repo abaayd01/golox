@@ -149,6 +149,7 @@ func main() {
 		"Literal: value Object",
 		"Var: name Token",
 		"Assign: name Token, value Expr",
+		"Logical: left Expr, operator Token, right Expr",
 	})
 	if err != nil {
 		log.Fatal(err)

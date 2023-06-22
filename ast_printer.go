@@ -55,3 +55,7 @@ func (a AstPrinter) VisitVar(expr Var) (any, error) {
 func (a AstPrinter) VisitAssign(expr Assign) (any, error) {
 	return fmt.Sprintf("%v = %v", expr.name.lexeme, expr.value), nil
 }
+
+func (a AstPrinter) VisitLogical(expr Logical) (any, error) {
+	return a.parenthesize(expr.operator.lexeme, expr.left, expr.right), nil
+}

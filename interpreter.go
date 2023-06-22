@@ -179,6 +179,46 @@ func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	return nil, nil
 }
 
+func (i Interpreter) VisitLogical(expr Logical) (any, error) {
+	if expr.operator.tokenType == OR {
+		lv, err := i.evaluate(expr.left)
+		if err != nil {
+			return nil, err
+		}
+
+		if isTruthy(lv) {
+			return lv, nil
+		}
+
+		rv, err := i.evaluate(expr.right)
+		if err != nil {
+			return nil, err
+		}
+
+		return rv, nil
+	}
+
+	if expr.operator.tokenType == AND {
+		lv, err := i.evaluate(expr.left)
+		if err != nil {
+			return nil, err
+		}
+
+		if !isTruthy(lv) {
+			return lv, nil
+		}
+
+		rv, err := i.evaluate(expr.right)
+		if err != nil {
+			return nil, err
+		}
+
+		return rv, nil
+	}
+
+	return nil, NewRuntimeError(expr.operator, "Logical operator must be 'or' or 'and'.")
+}
+
 func (i Interpreter) VisitVar(expr Var) (any, error) {
 	return i.Environment.Get(expr.name)
 }
