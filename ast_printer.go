@@ -59,3 +59,7 @@ func (a AstPrinter) VisitAssign(expr Assign) (any, error) {
 func (a AstPrinter) VisitLogical(expr Logical) (any, error) {
 	return a.parenthesize(expr.operator.lexeme, expr.left, expr.right), nil
 }
+
+func (a AstPrinter) VisitCall(expr Call) (any, error) {
+	return a.parenthesize("fn", expr), nil
+}

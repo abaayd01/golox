@@ -67,6 +67,16 @@ func (t Logical) Accept(visitor ExprVisitor) (any, error) {
 	return visitor.VisitLogical(t)
 }
 
+type Call struct {
+	callee    Expr
+	paren     Token
+	arguments []Expr
+}
+
+func (t Call) Accept(visitor ExprVisitor) (any, error) {
+	return visitor.VisitCall(t)
+}
+
 type ExprVisitor interface {
 	VisitUnary(expr Unary) (any, error)
 	VisitBinary(expr Binary) (any, error)
@@ -75,4 +85,5 @@ type ExprVisitor interface {
 	VisitVar(expr Var) (any, error)
 	VisitAssign(expr Assign) (any, error)
 	VisitLogical(expr Logical) (any, error)
+	VisitCall(expr Call) (any, error)
 }

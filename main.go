@@ -54,7 +54,7 @@ func (l *Lox) run(source string) error {
 		return err
 	}
 
-	e := NewEnvironment()
+	e := NewGlobalEnvironment()
 	interpreter := Interpreter{
 		Lox:         l,
 		Environment: e,

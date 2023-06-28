@@ -1,14 +1,42 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Environment struct {
 	EnclosingEnv *Environment
 	Values       map[string]any
 }
 
+type Clock struct{}
+
+func (c Clock) call(interpreter Interpreter, obj []Object) Object {
+	return time.Now().UnixMilli() / 1000
+}
+
+func (c Clock) arity() int {
+	return 0
+}
+
+func NewGlobalEnvironment() *Environment {
+	env := Environment{
+		EnclosingEnv: nil,
+		Values:       map[string]any{},
+	}
+
+	var _ LoxCallable = Clock{}
+
+	env.Define("clock", Clock{})
+
+	return &env
+}
+
 func NewEnvironment() *Environment {
-	return &Environment{Values: map[string]any{}}
+	return &Environment{
+		Values: map[string]any{},
+	}
 }
 
 func NewEnvironmentWithEnclosing(env *Environment) *Environment {

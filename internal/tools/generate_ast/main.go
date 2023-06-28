@@ -150,6 +150,7 @@ func main() {
 		"Var: name Token",
 		"Assign: name Token, value Expr",
 		"Logical: left Expr, operator Token, right Expr",
+		"Call: callee Expr, paren Token, arguments []Expr",
 	})
 	if err != nil {
 		log.Fatal(err)

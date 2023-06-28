@@ -478,7 +478,61 @@ func (p *Parser) unary() (Expr, error) {
 		}, nil
 	}
 
-	return p.primary()
+	return p.call()
+}
+
+func (p *Parser) call() (Expr, error) {
+	expr, err := p.primary()
+
+	for {
+		if p.match(LEFT_PAREN) {
+			expr, err = p.finishCall(expr)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			break
+		}
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) finishCall(expr Expr) (Expr, error) {
+	var arguments []Expr
+
+	if !p.check(RIGHT_PAREN) {
+		expr, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+
+		arguments = append(arguments, expr)
+
+		for p.match(COMMA) {
+			if len(arguments) >= 255 {
+				p.error(p.peek(), "Can't have more than 255 arguments.")
+			}
+
+			expr, err := p.expression()
+			if err != nil {
+				return nil, err
+			}
+
+			arguments = append(arguments, expr)
+		}
+	}
+
+	paren, err := p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
+	if err != nil {
+		return nil, err
+	}
+
+	return Call{
+		callee:    expr,
+		arguments: arguments,
+		paren:     *paren,
+	}, nil
 }
 
 // Grammar Production:

@@ -143,6 +143,37 @@ func (i Interpreter) VisitUnary(expr Unary) (any, error) {
 	return nil, nil
 }
 
+func (i Interpreter) VisitCall(expr Call) (any, error) {
+	callee, err := i.evaluate(expr.callee)
+	if err != nil {
+		return nil, err
+	}
+
+	var arguments []Object
+	for _, arg := range expr.arguments {
+		argEval, err := i.evaluate(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		arguments = append(arguments, argEval)
+	}
+
+	if fn, ok := callee.(LoxCallable); !ok {
+		if len(arguments) != fn.arity() {
+			return nil, NewRuntimeError(expr.paren, fmt.Sprintf("Expected %d arguments but got %d arguments instead.", fn.arity(), len(arguments)))
+		}
+		return nil, NewRuntimeError(expr.paren, "Can only call functions and classes.")
+	} else {
+		return fn.call(i, arguments), nil
+	}
+}
+
+type LoxCallable interface {
+	call(i Interpreter, arguments []Object) Object
+	arity() int
+}
+
 func (i Interpreter) VisitBinary(expr Binary) (any, error) {
 	left, _ := i.evaluate(expr.left)
 	right, _ := i.evaluate(expr.right)
