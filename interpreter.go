@@ -91,6 +91,10 @@ func (i Interpreter) VisitStmtIf(expr StmtIf) (any, error) {
 	return nil, nil
 }
 
+func (i Interpreter) VisitStmtFunction(stmt StmtFunction) (any, error) {
+	panic("Interpreter.VisitStmtFunction not implemented!")
+}
+
 func (i Interpreter) executeBlock(statements []Stmt, environment Environment) error {
 	prevEnv := i.Environment
 

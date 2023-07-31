@@ -27,11 +27,72 @@ func (p *Parser) Parse() ([]Stmt, error) {
 }
 
 func (p *Parser) declaration() (Stmt, error) {
+	if p.match(FUN) {
+		return p.function("function")
+	}
+
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
 
 	return p.statement()
+}
+
+func (p *Parser) function(kind string) (Stmt, error) {
+	name, err := p.consume(IDENTIFIER, fmt.Sprintf("Expect %s name", kind))
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(LEFT_PAREN, fmt.Sprintf("Expect '(' after %s %s", kind, name))
+	if err != nil {
+		return nil, err
+	}
+
+	var parameters []Token
+
+	if !p.check(RIGHT_PAREN) {
+		newParam, err := p.consume(IDENTIFIER, "Expect parameter name.")
+		if err != nil {
+			return nil, err
+		}
+
+		parameters = append(parameters, *newParam)
+
+		for p.match(COMMA) {
+			if len(parameters) >= 255 {
+				return nil, p.error(p.peek(), "Can't have more than 255 parameters.")
+			}
+
+			newParam, err := p.consume(IDENTIFIER, "Expect parameter name.")
+			if err != nil {
+				return nil, err
+			}
+
+			parameters = append(parameters, *newParam)
+		}
+	}
+
+	_, err = p.consume(RIGHT_PAREN, "Expect ')' after parameters.")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(LEFT_BRACE, "Expect '{' before "+kind+" body.")
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := p.blockStatement()
+	if err != nil {
+		return nil, err
+	}
+
+	return StmtFunction{
+		name:   *name,
+		params: parameters,
+		body:   body.(StmtBlock),
+	}, nil
 }
 
 func (p *Parser) varDeclaration() (Stmt, error) {

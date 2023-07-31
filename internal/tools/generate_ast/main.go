@@ -163,6 +163,7 @@ func main() {
 		"StmtBlock: statements []Stmt",
 		"StmtIf: condition Expr, thenBranch Stmt, elseBranch Stmt",
 		"StmtWhile: condition Expr, body Stmt",
+		"StmtFunction: name Token, params []Token, body StmtBlock",
 	})
 
 	if err != nil {
