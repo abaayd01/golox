@@ -92,7 +92,9 @@ func (i Interpreter) VisitStmtIf(expr StmtIf) (any, error) {
 }
 
 func (i Interpreter) VisitStmtFunction(stmt StmtFunction) (any, error) {
-	panic("Interpreter.VisitStmtFunction not implemented!")
+	f := LoxFunction{declaration: stmt}
+	i.Environment.Define(stmt.name.lexeme, f)
+	return nil, nil
 }
 
 func (i Interpreter) executeBlock(statements []Stmt, environment Environment) error {
