@@ -97,6 +97,10 @@ func (i Interpreter) VisitStmtFunction(stmt StmtFunction) (any, error) {
 	return nil, nil
 }
 
+func (i Interpreter) VisitStmtReturn(stmt StmtReturn) (any, error) {
+	panic("not implemented!")
+}
+
 func (i Interpreter) executeBlock(statements []Stmt, environment Environment) error {
 	prevEnv := i.Environment
 

@@ -164,6 +164,7 @@ func main() {
 		"StmtIf: condition Expr, thenBranch Stmt, elseBranch Stmt",
 		"StmtWhile: condition Expr, body Stmt",
 		"StmtFunction: name Token, params []Token, body StmtBlock",
+		"StmtReturn: returnKeyword Token, value Expr",
 	})
 
 	if err != nil {

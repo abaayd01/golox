@@ -67,6 +67,15 @@ func (t StmtFunction) Accept(visitor StmtVisitor) (any, error) {
 	return visitor.VisitStmtFunction(t)
 }
 
+type StmtReturn struct {
+	returnKeyword Token
+	value         Expr
+}
+
+func (t StmtReturn) Accept(visitor StmtVisitor) (any, error) {
+	return visitor.VisitStmtReturn(t)
+}
+
 type StmtVisitor interface {
 	VisitStmtExpression(expr StmtExpression) (any, error)
 	VisitStmtPrint(expr StmtPrint) (any, error)
@@ -75,4 +84,5 @@ type StmtVisitor interface {
 	VisitStmtIf(expr StmtIf) (any, error)
 	VisitStmtWhile(expr StmtWhile) (any, error)
 	VisitStmtFunction(expr StmtFunction) (any, error)
+	VisitStmtReturn(expr StmtReturn) (any, error)
 }
